@@ -5,7 +5,7 @@ Function Invoke-WalletAddKey {
     )
 
     $json = @{
-        "mnemonic"=$mnemonic
+        mnemonic=$mnemonic
     } | ConvertTo-Json
 
     chia rpc wallet add_key $json | ConvertFrom-Json
@@ -19,7 +19,7 @@ Function Invoke-WalletCheckDeleteKey {
     )
 
     $json = @{
-        "fingerprint" = $fingerprint
+        fingerprint = $fingerprint
     }
 
     if($max_ph_to_search) {
@@ -39,7 +39,7 @@ Function Invoke-WalletDeleteAllKeys {
     )
 
     $json = @{
-        "fingerprint" = $fingerprint
+        fingerprint = $fingerprint
     } | ConvertTo-Json
 
     chia rpc wallet delete_all_keys $json | ConvertFrom-Json
@@ -62,7 +62,7 @@ Function Invoke-WalletGetPrivateKey {
     )
 
     $json = @{
-        "fingerprint" = $fingerprint
+        fingerprint = $fingerprint
     } | ConvertTo-Json
 
     chia rpc wallet get_private_key $json | ConvertFrom-Json
@@ -76,7 +76,7 @@ Function Invoke-WalletGetPublicKeys {
     )
 
     $json = @{
-        "fingerprint" = $fingerprint
+        fingerprint = $fingerprint
     } | ConvertTo-Json
 
     chia rpc wallet get_public_keys $json | ConvertFrom-Json
@@ -90,7 +90,7 @@ Function Invoke-WalletLogIn {
     )
 
     $json = @{
-        "fingerprint" = $fingerprint
+        fingerprint = $fingerprint
     } | ConvertTo-Json
 
     chia rpc wallet log_in $json | ConvertFrom-Json
@@ -126,7 +126,7 @@ Function Invoke-WalletGetTimestampForHeight{
     )
 
     $json = @{
-        "height"=$height
+        height=$height
     } | ConvertTo-Json
 
     chia rpc wallet get_timestamp_for_height $json | ConvertFrom-Json
@@ -139,7 +139,7 @@ Function Invoke-WalletPushTx {
     )
 
     $json = @{
-        "spend_bundle" = $spend_bundle
+        spend_bundle = $spend_bundle
     } | ConvertTo-Json
 
     chia rpc wallet push_tx $json
@@ -160,8 +160,8 @@ Function Set-AutoClaim{
         [Parameter(Mandatory=$true,ParameterSetName='Disable')]
         [switch]
         $disabled,
-        [Int64]$tx_fee,
-        [Int64]$min_amount,
+        [decimal]$tx_fee,
+        [decimal]$min_amount,
         [Int64]$batch_size
     )
 
@@ -185,7 +185,7 @@ Function Set-AutoClaim{
 
     $json = $json | ConvertTo-Json
 
-    return chia rpc wallet set_auto_claim $json | ConvertFrom-Json
+    chia rpc wallet set_auto_claim $json | ConvertFrom-Json
 }
 
 
@@ -193,23 +193,23 @@ Function Invoke-WalletCreateNewWallet {
     param(
         [Parameter(Mandatory=$true,ParameterSetName = 'walletType')]
         [ValidateSet("cat_wallet","did_wallet","nft_wallet","pool_wallet")]
-        $wallet_type,
+        [string]$wallet_type,
         
         
         [Parameter(ParameterSetName='walletType')]
         [ValidateSet("new","existing")]
-        $mode = $(if($wallet_type -eq "cat_wallet"){Throw "-Mode must be set with wallet_type of cat_wallet"}),
+        [string]$mode = $(if($wallet_type -eq "cat_wallet"){Throw "-Mode must be set with wallet_type of cat_wallet"}),
         
         [string]$name,
         
         [Parameter(ParameterSetName='walletType')]
-        $amount = $(
+        [decimal]$amount = $(
             if($mode -eq "new") {Throw "-amount must be set if mode is set to new"}
             if($did_type -eq "new") {Throw "-amount must be set if did_type -eq new"}
             ),
         
         [Parameter(ParameterSetName='walletType')]
-        $asset_id = $(if($mode -eq "existing") {Throw "-asset_id must be set if mode is set to existing"}),
+        [string]$asset_id = $(if($mode -eq "existing") {Throw "-asset_id must be set if mode is set to existing"}),
         
         [Parameter(ParameterSetName = 'walletType')]
         [ValidateSet("new","recovery")]
@@ -222,7 +222,7 @@ Function Invoke-WalletCreateNewWallet {
         [int]$num_of_backup_ids_needed = $(if($did_type -eq "new"){Throw "-num_of_backup_ids_needed is required if did_type -eq new"}),
 
         [Parameter(ParameterSetName = 'walletType')]
-        $did_id = $(if($wallet_type -eq "nft_wallet") {Throw "-did_id must be set if wallet_type -eq nft_wallet"}),
+        [string]$did_id = $(if($wallet_type -eq "nft_wallet") {Throw "-did_id must be set if wallet_type -eq nft_wallet"}),
 
 
         $metadata,
@@ -291,13 +291,12 @@ Function Invoke-WalletGetWallets {
 
     $json = $json | ConvertTo-Json
 
-    return chia rpc wallet get_wallets $json | ConvertFrom-Json -Depth 10
+    chia rpc wallet get_wallets $json | ConvertFrom-Json -Depth 10
 
 }
 
 Function Invoke-WalletDeleteNotification {
     param(
-        
         $ids
     )
 
@@ -316,7 +315,7 @@ Function Invoke-WalletDeleteUnconfirmedTransactions {
     )
 
     $json = @{
-        "wallet_id"=$wallet_id
+        wallet_id=$wallet_id
     } | ConvertTo-Json
 
     chia rpc wallet delete_unconfirmed_transactions $json | ConvertFrom-Json
@@ -326,11 +325,11 @@ Function Invoke-WalletDeleteUnconfirmedTransactions {
 Function Invoke-WalletExtendDerivationIndex {
     param(
         [Parameter(Mandatory=$true)]
-        $index
+        [int32]$index
     )
 
     $json = @{
-        "index"=$index
+        index=$index
     } | ConvertTo-Json
 
     chia rpc wallet extend_derivation_index $json | ConvertFrom-Json
@@ -342,30 +341,20 @@ Function Invoke-WalletGetCoinRecords {
     chia rpc wallet get_coin_records | ConvertFrom-Json
 }
 
-Function Invoke-NFTGetInfo{
-    param(
-        $coin_id
-    )
 
-    $json = @{
-        'coin_id'=$coin_id
-    } | ConvertTo-Json
-
-    return chia rpc wallet nft_get_info $json | ConvertFrom-Json
-}
 
 Function Invoke-WalletGetCoinRecordsByName {
     param(
         [Parameter(Mandatory=$true)]
         [array]$names,
-        $start_height,
-        $end_height,
+        [int64]$start_height,
+        [int64]$end_height,
         [switch]
         $include_spent_coins
     )
 
     $json = @{
-        "names" = $names
+        names = $names
     }
     if($start_height){
         $json.Add("start_height",$start_height)
@@ -401,7 +390,7 @@ Function Invoke-WalletGetNextAddress {
     )
 
     $json = @{
-        "wallet_id"=$wallet_id
+        wallet_id=$wallet_id
     }
     if($new_address.IsPresent){
         $json.Add("new_address",$true)
@@ -415,8 +404,8 @@ Function Invoke-WalletGetNextAddress {
 Function Invoke-WalletGetNotifications {
     param(
         $ids,
-        $start,
-        $end
+        [int64]$start,
+        [int64]$end
     )
 
     $json = @{}
@@ -438,16 +427,16 @@ Function Invoke-WalletGetNotifications {
 Function Invoke-WalletGetSpendableCoins {
     param(
         [Parameter(Mandatory=$true)]
-        $wallet_id,
-        [int64]$min_coin_amount,
-        [int64]$max_coin_amount,
-        [array]$excluded_coin_amounts,
+        [int64]$wallet_id,
+        [decimal]$min_coin_amount,
+        [decimal]$max_coin_amount,
+        [decimal]$excluded_coin_amounts,
         [array]$excluded_coins,
         [array]$excluded_coin_ids
     )
 
     $json = @{
-        "wallet_id"=$wallet_id
+        wallet_id=$wallet_id
     }
 
     if($min_coin_amount){
@@ -475,11 +464,11 @@ Function Invoke-WalletGetSpendableCoins {
 Function Invoke-WalletGetTransaction{
     param(
         [Parameter(Mandatory=$true)]
-        $transaction_id
+        [string]$transaction_id
     )
 
     $json = @{
-        'transaction_id'=$transaction_id
+        transaction_id=$transaction_id
     } | ConvertTo-Json
 
     return chia rpc wallet get_transaction $json | ConvertFrom-Json
@@ -491,11 +480,11 @@ Function Invoke-WalletGetTransaction{
 Function Invoke-WalletGetTransactionCount{
     param(
         [Parameter(Mandatory=$true)]
-        $wallet_id
+        [int64]$wallet_id
     )
 
     $json = @{
-        "wallet_id"=$wallet_id
+        wallet_id=$wallet_id
     } | ConvertTo-Json
 
     return chia rpc wallet get_transaction_count $json | ConvertFrom-Json
@@ -504,13 +493,13 @@ Function Invoke-WalletGetTransactionCount{
 Function Invoke-WalletGetTransactions {
     param(
         [Parameter(Mandatory=$true)]
-        $wallet_id,
-        $start,
-        $end
+        [int64]$wallet_id,
+        [int64]$start,
+        [int64]$end
     )
 
     $json = @{
-        "wallet_id"=$wallet_id;
+        wallet_id=$wallet_id;
     }
     if($start){
         $json.Add("start",$start)
@@ -526,13 +515,13 @@ Function Invoke-WalletGetTransactions {
 Function Invoke-WalletGetTransactionMemo {
     param(
         [Parameter(Mandatory=$true)]
-        $transaction_id,
+        [string]$transaction_id,
         [switch]
         $readable
     )
 
     $json = @{
-        'transaction_id'=$transaction_id
+        transaction_id=$transaction_id
     } | ConvertTo-Json
 
     $memo = chia rpc wallet get_transaction_memo $json | ConvertFrom-Json
@@ -547,10 +536,10 @@ Function Invoke-WalletGetTransactionMemo {
 Function Invoke-WalletGetWalletBalance {
     param(
         [Parameter(Mandatory=$true)]
-        $wallet_id 
+        [int64]$wallet_id 
     )
     $json = @{
-        "wallet_id"=$wallet_id
+        wallet_id=$wallet_id
     } | ConvertTo-Json
 
     chia rpc wallet get_wallet_balance $json | ConvertFrom-Json
@@ -558,7 +547,7 @@ Function Invoke-WalletGetWalletBalance {
 
 Function Invoke-WalletGetWalletBalances {
     param(
-        $wallet_ids
+        [int64]$wallet_ids
     )
     $json = @{}
     if($wallet_ids){
@@ -573,18 +562,18 @@ Function Invoke-WalletGetWalletBalances {
 Function Invoke-WalletSelectCoins {
     param(
         [Parameter(Mandatory=$true)]
-        $wallet_id,
+        [int64]$wallet_id,
         [Parameter(Mandatory=$true)]
-        $amount,
-        $min_coin_amount,
-        $max_coin_amount,
+        [decimal]$amount,
+        [decimal]$min_coin_amount,
+        [decimal]$max_coin_amount,
         $excluded_coin_amounts,
         $excluded_coins
     )
 
     $json = @{
-        "wallet_id" = $wallet_id;
-        "amount" = $amount
+        wallet_id = $wallet_id;
+        amount = $amount
     }
     if($min_coin_amount){
         $json.Add("min_coin_amount",$min_coin_amount)
@@ -608,18 +597,18 @@ Function Invoke-WalletSelectCoins {
 Function Invoke-WalletSendNotification {
     param(
         [Parameter(Mandatory=$true)]
-        $target,
+        [string]$target,
         [Parameter(Mandatory=$true)]
-        $message,
+        [string]$message,
         [Parameter(Mandatory=$true)]
-        $amount,
-        $fee
+        [decimal]$amount,
+        [decimal]$fee
     )
 
     $json = @{
-        "target"=$target
-        "message" = (ConvertTo-Hex -string $message)
-        "amount" = $amount
+        target=$target
+        message = (ConvertTo-Hex -string $message)
+        amount = $amount
     }
     if($fee){
         $json.Add("fee",$fee)
@@ -637,11 +626,11 @@ Function Invoke-WalletSendTransaction {
         [Parameter(Mandatory=$true)]
         [string]$address,
         [Parameter(Mandatory=$true)]
-        [int64]$amount,
+        [decimal]$amount,
         [int64]$fee,
         [array]$memos,
-        [int64]$min_coin_amount,
-        [int64]$max_coin_amount,
+        [decimal]$min_coin_amount,
+        [decimal]$max_coin_amount,
         [array]$excluded_coin_amounts,
         [array]$excluded_coin_ids,
         [swith]
@@ -649,9 +638,9 @@ Function Invoke-WalletSendTransaction {
     )
 
     $json = @{
-        "wallet_id" = $wallet_id
-        "address" = $address
-        "amount" = $amount
+        wallet_id = $wallet_id
+        address = $address
+        amount = $amount
     }
     if($fee) {
         $json.Add("fee",$fee)
@@ -727,14 +716,14 @@ Function Invoke-WalletSendTransactionMulti {
 Function Invoke-WalletSignMessageByAddress {
     param(
         [Parameter(Mandatory=$true)]
-        $address,
+        [decimal]$address,
         [Parameter(Mandatory=$true)]
-        $message
+        [string]$message
     )
 
     $json = @{
-        "address"=$address
-        "message"=$message
+        address=$address
+        message=$message
     } | ConvertTo-Json
 
     chia rpc wallet sign_message_by_address $json | ConvertFrom-Json
@@ -1120,6 +1109,23 @@ Function Invoke-WalletGetOfferSummary {
 
 Function Invoke-WalletGetStrayCats {
     chia rpc wallet get_stray_cats | ConvertFrom-Json
+}
+
+Function Invoke-WalletTakeOffer {
+    param(
+        [Parameter(Mandatory=$true)]
+        $offer,
+        $min_coin_amount,
+        $max_coin_amount,
+        $solver,
+        $fee,
+        [switch]
+        $reuse_puzhash
+    )
+
+    $json = @{
+        offer=$offer
+    }
 }
 
 Function ConvertFrom-Hex{
