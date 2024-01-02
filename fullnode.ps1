@@ -1,53 +1,53 @@
 
-Function Get-AdditionsAndRemovals{
+Function Invoke-FullNodeGetAdditionsAndRemovals {
     param(
         [Parameter(Mandatory=$true)]
-        $header_hash
+        [string]$header_hash
     )
     $json = @{
         'header_hash'=$header_hash
     } | ConvertTo-Json
 
-    return  chia rpc full_node get_additions_and_removals $json | ConvertFrom-Json
+    chia rpc full_node get_additions_and_removals $json | ConvertFrom-Json
 }
 
-Function Get-AllMempoolItems{
-    return chia rpc full_node get_all_mempool_items | ConvertFrom-Json
+Function Invoke-FullNodeGetAllMempoolItems{
+    chia rpc full_node get_all_mempool_items | ConvertFrom-Json
 }
 
-Function Get-AllMempoolTxIds{
-    return chia rpc full_node get_all_mempool_tx_ids | ConvertFrom-Json
+Function Invoke-FullNodeGetAllMempoolTxIds{
+    chia rpc full_node get_all_mempool_tx_ids | ConvertFrom-Json
 }
 
-Function Get-Block{
+Function Invoke-FullNodeGetBlock{
     param(
         [Parameter(Mandatory=$true)]
-        $header_hash
+        [string]$header_hash
     )
     $json = @{
         'header_hash'=$header_hash
     } | ConvertTo-Json
 
-    return  chia rpc full_node get_block $json | ConvertFrom-Json
+    chia rpc full_node get_block $json | ConvertFrom-Json
 }
 
-Function Get-BlockChainState{
-    return chia rpc full_node get_blockchain_state | ConvertFrom-Json
+Function Invoke-FullNodeGetBlockChainState{
+    chia rpc full_node get_blockchain_state | ConvertFrom-Json
 }
 
-Function Get-Blocks{
+Function Invoke-FullNodeGetBlocks{
     param(
         [Parameter(Mandatory=$true)]
-        $start,
+        [int64]$start,
         [Parameter(Mandatory=$true)]
-        $end,
+        [int64]$end,
         [switch]
         $exclude_header_hash,
         [switch]
         $exclude_reorged
     )
     $json = @{
-        'start'=$start;
+        'start'=$start
         'end'=$end
     } 
     if($exclude_header_hash.IsPresent){
@@ -59,27 +59,27 @@ Function Get-Blocks{
 
     $json = $json | ConvertTo-Json
 
-    return chia rpc full_node get_block_records $json | ConvertFrom-Json    
+    chia rpc full_node get_block_records $json | ConvertFrom-Json    
 }
 
-Function Get-BlockCountMetrics{
+Function Invoke-FullNodeGetBlockCountMetrics{
 
-    return  chia rpc full_node get_block_count_metrics | ConvertFrom-Json
+    chia rpc full_node get_block_count_metrics | ConvertFrom-Json
 }
 
-Function Get-BlockRecord{
+Function Invoke-FullNodeGetBlockRecord{
     param(
         [Parameter(Mandatory=$true)]
-        $header_hash
+        [string]$header_hash
     )
     $json = @{
         'header_hash'=$header_hash
     } | ConvertTo-Json
 
-    return  chia rpc full_node get_block_record $json | ConvertFrom-Json
+    chia rpc full_node get_block_record $json | ConvertFrom-Json
 }
 
-Function Get-BlockRecords{
+Function Invoke-FullNodeGetBlockRecords{
     param(
         [Parameter(Mandatory=$true)]
         [Int64]$start,
@@ -87,49 +87,49 @@ Function Get-BlockRecords{
         [Int64]$end
     )
     $json = @{
-        'start'=$start;
+        'start'=$start
         'end'=$end
     } | ConvertTo-Json
 
-    return chia rpc full_node get_block_records $json | ConvertFrom-Json    
+    chia rpc full_node get_block_records $json | ConvertFrom-Json    
 }
 
-Function Get-BlockRecordByHeight{
+Function Invoke-FullNodeGetBlockRecordByHeight{
     param(
         [Parameter(Mandatory=$true)]
-        $height
+        [int64]$height
     )
     $json = @{
         'height'=$height
     } | ConvertTo-Json
 
-    return chia rpc full_node get_block_record_by_height $json | ConvertFrom-Json    
+    chia rpc full_node get_block_record_by_height $json | ConvertFrom-Json    
 }
 
-Function Get-BlockSpends{
+Function Invoke-FullNodeGetBlockSpends{
     param(
         [Parameter(Mandatory=$true)]
-        $header_hash
+        [string]$header_hash
     )
     $json = @{
         'header_hash'=$header_hash
     } | ConvertTo-Json
 
-    return  chia rpc full_node get_block_spends $json | ConvertFrom-Json
+    chia rpc full_node get_block_spends $json | ConvertFrom-Json
 }
 
-Function Get-CoinRecordsByHint{
+Function Invoke-FullNodeGetCoinRecordsByHint{
     param(
         [Parameter(Mandatory=$true)]
-        $hint,
-        $start_height,
-        $end_height,
+        [string]$hint,
+        [int64]$start_height,
+        [int64]$end_height,
         [switch]
         $include_spent_coins
     )
 
     $json = @{
-        'hint'=$hint;
+        'hint'=$hint
         'include_spent_coins'=$include_spent_coins
     }
 
@@ -145,21 +145,21 @@ Function Get-CoinRecordsByHint{
 
     $json = $json | ConvertTo-Json
 
-    return  chia rpc full_node get_coin_records_by_hint $json | ConvertFrom-Json
+    chia rpc full_node get_coin_records_by_hint $json | ConvertFrom-Json
 }
 
-Function Get-CoinRecordsByNames{
+Function Invoke-FullNodeGetCoinRecordsByNames{
     param(
         [Parameter(Mandatory=$true)]
         [string[]]$names,
-        $start_height,
-        $end_height,
+        [int64]$start_height,
+        [int64]$end_height,
         [switch]
         $include_spent_coins
     )
 
     $json = @{
-        'names'=$names;
+        'names'=$names
         'include_spent_coins'=$include_spent_coins
     }
 
@@ -175,16 +175,16 @@ Function Get-CoinRecordsByNames{
 
     $json = $json | ConvertTo-Json
 
-    return  chia rpc full_node get_coin_records_by_names $json | ConvertFrom-Json
+    chia rpc full_node get_coin_records_by_names $json | ConvertFrom-Json
 }
 
 
-Function Get-CoinRecordByParentIds{
+Function Invoke-FullNodeGetCoinRecordByParentIds{
     param(
         [Parameter(Mandatory=$true)]
-        $parent_ids,
-        $start_height,
-        $end_height,
+        [string[]]$parent_ids,
+        [int64]$start_height,
+        [int64]$end_height,
         [switch]
         $include_spent_coins
     )
@@ -205,15 +205,15 @@ Function Get-CoinRecordByParentIds{
 
     $json = $json | ConvertTo-Json
 
-    return  chia rpc full_node get_coin_records_by_parent_ids $json | ConvertFrom-Json
+    chia rpc full_node get_coin_records_by_parent_ids $json | ConvertFrom-Json
 }
 
-Function Get-CoinRecordByPuzzleHash{
+Function Invoke-FullNodeGetCoinRecordByPuzzleHash{
     param(
         [Parameter(Mandatory=$true)]
-        $puzzle_hash,
-        $start_height,
-        $end_height,
+        [string]$puzzle_hash,
+        [int64]$start_height,
+        [int64]$end_height,
         [switch]
         $include_spent_coins
     )
@@ -235,15 +235,15 @@ Function Get-CoinRecordByPuzzleHash{
     $json = $json | ConvertTo-Json
     
 
-    return  chia rpc full_node get_coin_records_by_puzzle_hash $json | ConvertFrom-Json
+    chia rpc full_node get_coin_records_by_puzzle_hash $json | ConvertFrom-Json
 }
 
-Function Get-CoinRecordsByPuzzleHashes{
+Function Invoke-FullNodeGetCoinRecordsByPuzzleHashes{
     param(
         [Parameter(Mandatory=$true)]
         [string[]]$puzzle_hashes,
-        $start_height,
-        $end_height,
+        [int64]$start_height,
+        [int64]$end_height,
         [switch]
         $include_spent_coins
     )
@@ -265,25 +265,25 @@ Function Get-CoinRecordsByPuzzleHashes{
     $json = $json | ConvertTo-Json
     
 
-    return  chia rpc full_node get_coin_records_by_puzzle_hashes $json | ConvertFrom-Json
+    chia rpc full_node get_coin_records_by_puzzle_hashes $json | ConvertFrom-Json
 }
 
-Function Get-CoinRecordByName{
+Function Invoke-FullNodeGetCoinRecordByName{
     param(
         [Parameter(Mandatory=$true)]
-        $name
+        [string]$name
     )
     $json = @{
         'name'=$name
     } | ConvertTo-Json
 
-    return  chia rpc full_node get_coin_record_by_name $json | ConvertFrom-Json
+    chia rpc full_node get_coin_record_by_name $json | ConvertFrom-Json
 }
 
-Function Get-FeeEstimate{
+Function Invoke-FullNodeGetFeeEstimate{
     param(
         [parameter(Mandatory=$true,ParameterSetName="WithSpend")]
-        [string]$spend_bundle,
+        $spend_bundle,
         [parameter(Mandatory=$true,ParameterSetName="WithCost")]
         [Int64]$cost,
         [int64[]]$target_times
@@ -299,13 +299,14 @@ Function Get-FeeEstimate{
     if($target_times){
         $json.Add('target_times',$target_times)
     }
-    $json = $json | ConvertTo-Json
+    $json = $json | ConvertTo-Json -Depth 10
+    $json
 
-    return chia rpc full_node get_fee_estimate $json | ConvertFrom-Json
+    chia rpc full_node get_fee_estimate $json | ConvertFrom-Json
 
 }
 
-Function Get-MempoolItemByTxId{
+Function Invoke-FullNodeGetMempoolItemByTxId{
     param(
         [Parameter(Mandatory=$true)]
         [string]$tx_id
@@ -315,15 +316,28 @@ Function Get-MempoolItemByTxId{
         'tx_id'=$tx_id;
     } | ConvertTo-Json
 
-    return  chia rpc full_node get_mempool_item_by_tx_id $json | ConvertFrom-Json
+    chia rpc full_node get_mempool_item_by_tx_id $json | ConvertFrom-Json
 }
 
-Function Get-NetworkInfo{
+Function Invoke-FullNodeGetMempoolItemsByCoinName{
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$coin_name
+    )
+
+    $json =@{
+        'coin_name'=$coin_name
+    } | ConvertTo-Json
+
+    chia rpc full_node get_mempool_items_by_coin_name $json | ConvertFrom-Json
+}
+
+Function Invoke-FullNodeGetNetworkInfo{
   
-    return  chia rpc full_node get_network_info | ConvertFrom-Json
+    chia rpc full_node get_network_info | ConvertFrom-Json
 }
 
-Function Get-NetworkSpace{
+Function Invoke-FullNodeGetNetworkSpace{
     param(
         [Parameter(Mandatory=$true)]
         [string]$older_block_header_hash,
@@ -336,31 +350,31 @@ Function Get-NetworkSpace{
         'newer_block_header_hash'=$newer_block_header_hash
     } | ConvertTo-Json
 
-    return  chia rpc full_node get_network_space $json | ConvertFrom-Json
+    chia rpc full_node get_network_space $json | ConvertFrom-Json
 }
 
-Function Get-PuzzleAndSolution{
+Function Invoke-FullNodeGetPuzzleAndSolution{
     param(
         [Parameter(Mandatory=$true)]
-        $coin_id,
+        [string]$coin_id,
         [Parameter(Mandatory=$true)]
-        $height
+        [int64]$height
     )
 
     $json = @{
-        'coin_id'=$coin_id;
+        'coin_id'=$coin_id
         'height'=$height
     } | ConvertTo-Json
 
-    return chia rpc full_node get_puzzle_and_solution $json | ConvertFrom-Json
+    chia rpc full_node get_puzzle_and_solution $json | ConvertFrom-Json
 }
 
-Function Get-RecentSignagePointOrEOS{
+Function Invoke-FullNodeGetRecentSignagePointOrEOS{
     param(
         [parameter(Mandatory=$true,ParameterSetName="WithSPHash")]
-        $sp_hash,
+        [string]$sp_hash,
         [parameter(Mandatory=$true,ParameterSetName="WithChallengeHash")]
-        $challenge_hash
+        [string]$challenge_hash
     )
 
     $json = @{} 
@@ -372,21 +386,21 @@ Function Get-RecentSignagePointOrEOS{
     }
     $json = $json | ConvertTo-Json
 
-    return  chia rpc full_node get_recent_signage_point_or_eos $json | ConvertFrom-Json
+    chia rpc full_node get_recent_signage_point_or_eos $json | ConvertFrom-Json
 }
 
-Function Get-Routes{
+Function Invoke-FullNodeGetRoutes{
   
-    return  chia rpc full_node get_routes | ConvertFrom-Json
+    chia rpc full_node get_routes | ConvertFrom-Json
 }
 
-Function Get-UnfinishedBlockHeaders{
+Function Invoke-FullNodeGetUnfinishedBlockHeaders{
 
-    return  chia rpc full_node get_unfinished_block_headers | ConvertFrom-Json
+    chia rpc full_node get_unfinished_block_headers | ConvertFrom-Json
 }
 
 Function Invoke-healthz{
-    return chia rpc full_node healthz
+    chia rpc full_node healthz
 }
 
 Function Invoke-PushTx{
@@ -395,7 +409,6 @@ Function Invoke-PushTx{
         [string]$spend_bundle
     )
 
-    return chia rpc full_node push_tx $spend_bundle | ConvertFrom-Json
-
+    chia rpc full_node push_tx $spend_bundle | ConvertFrom-Json
 
 }

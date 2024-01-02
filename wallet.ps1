@@ -295,6 +295,45 @@ Function Invoke-WalletGetWallets {
 
 }
 
+Function Invoke-WalletCreateSignedTransaction {
+    param(
+        [Parameter(Mandatory=$true)]
+        [int]$wallet_id,
+        [Parameter(Mandatory=$true)]
+        $additions,
+        [int64]$min_coin_amount,
+        [int64]$max_coin_amount,
+        $excluded_coin_amounts,
+        
+        $coins,
+        
+        $excluded_coins,
+        $coin_announcements,
+        $puzzle_announcements,
+        [int64]$fee
+
+    )
+
+    $json = @{
+        "wallet_id" = $wallet_id
+        "additions" = $additions
+        "fee" = 0
+    } 
+
+    if($coins){
+        $json.Add("coins",$coins)
+    }
+    if($excluded_coins){
+        $json.Add("excluded_coins",$excluded_coins)
+    }
+
+    $json = $json | ConvertTo-Json -Depth 10
+
+    $json
+    chia rpc wallet create_signed_transaction $json | ConvertFrom-Json
+}
+
+
 Function Invoke-WalletDeleteNotification {
     param(
         $ids
