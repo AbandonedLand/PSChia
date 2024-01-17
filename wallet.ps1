@@ -714,7 +714,9 @@ Function Invoke-WalletSendTransactionMulti {
         [Parameter(Mandatory=$true)]
         [int]$wallet_id,
         [int64]$fee,
-        [array]$additions
+        [array]$additions,
+        [switch]$as_file,
+        [string]$path
     )
     <#
     $additions = @(
@@ -746,9 +748,24 @@ Function Invoke-WalletSendTransactionMulti {
         $json.Add("additions",$additions)
     }
 
+   
+
     $json = $json | ConvertTo-Json -Depth 9
 
-    chia rpc wallet send_transaction_multi $json | ConvertFrom-Json
+    if($as_file.IsPresent){
+        if($path.Length -gt 0){
+            $json | Out-File $path
+            chia rpc wallet send_transaction_multi -j $path | ConvertFrom-Json
+        } else {
+            chia rpc wallet send_transaction_multi $json | ConvertFrom-Json
+        }
+        
+    }
+    else {
+        chia rpc wallet send_transaction_multi $json | ConvertFrom-Json
+    }
+
+    
 
 }
 
