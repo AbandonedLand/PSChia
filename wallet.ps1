@@ -665,14 +665,14 @@ Function Invoke-WalletSendTransaction {
         [Parameter(Mandatory=$true)]
         [string]$address,
         [Parameter(Mandatory=$true)]
-        [decimal]$amount,
+        [int64]$amount,
         [int64]$fee,
         [array]$memos,
-        [decimal]$min_coin_amount,
-        [decimal]$max_coin_amount,
+        [int64]$min_coin_amount,
+        [int64]$max_coin_amount,
         [array]$excluded_coin_amounts,
         [array]$excluded_coin_ids,
-        [swith]
+        [switch]
         $reuse_puzhash
     )
 
@@ -683,6 +683,8 @@ Function Invoke-WalletSendTransaction {
     }
     if($fee) {
         $json.Add("fee",$fee)
+    } else {
+        $json.Add("fee",0)
     }
     if($memos){
         $json.Add("memos",$memos)
