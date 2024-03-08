@@ -467,9 +467,9 @@ Function Invoke-WalletGetSpendableCoins {
     param(
         [Parameter(Mandatory=$true)]
         [int64]$wallet_id,
-        [decimal]$min_coin_amount,
-        [decimal]$max_coin_amount,
-        [decimal]$excluded_coin_amounts,
+        [Int64]$min_coin_amount,
+        [Int64]$max_coin_amount,
+        [Int64]$excluded_coin_amounts,
         [array]$excluded_coins,
         [array]$excluded_coin_ids
     )
