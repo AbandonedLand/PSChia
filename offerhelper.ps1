@@ -40,6 +40,7 @@ Class ChiaOffer{
     $nft_info
     $max_height
     $max_time
+    $tibet_response
 
 
     ChiaOffer(){
@@ -74,6 +75,10 @@ Class ChiaOffer{
         $this.BuildDriverDict($this.nft_info)
     }
 
+    rawrequested($coin, $amount){
+        $this.offer.([string]$this.coins.$coin.id)=$amount
+    }
+
     requested($coin, $amount){
         $this.offer.([string]$this.coins.$coin.id)=($amount*1000)
     }
@@ -99,6 +104,10 @@ Class ChiaOffer{
         $coin = 'Chia Wallet'
         $this.offer.([string]$this.coins.$coin.id)=([int64]($amount*-1000000000000))
         
+    }
+
+    rawoffered($coin, $amount){
+        $this.offer.([string]$this.coins.$coin.id)=(-1 * $amount)
     }
 
     offered($coin, $amount){
@@ -130,6 +139,23 @@ Class ChiaOffer{
 
     createofferwithoutjson(){
         $this.offertext = chia rpc wallet create_offer_for_ids $this.json
+    }
+
+
+
+    postToTibetSwap($pair_id){
+
+        $data = $this.offertext | convertfrom-json
+        $body = @{
+            pair_id = $pair_id
+            offer = $data.offer
+            action = "SWAP"
+        }
+        $contentType = 'application/json' 
+        $json_offer = $body | convertto-json
+        $uri = -join("https://api.v2.tibetswap.io/offer/",$pair_id)
+        
+        $this.tibet_response = Invoke-RestMethod -Method POST -body $json_offer -Uri $uri -ContentType $contentType
     }
     
     postToDexie(){
@@ -172,4 +198,9 @@ Class ChiaOffer{
         
     }
 
+}
+
+Function Get-AllOffers{
+    $offers = (chia rpc wallet get_all_offers '{"start":0,"end":100}'| ConvertFrom-Json).trade_records
+    return $offers
 }
