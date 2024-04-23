@@ -23,11 +23,17 @@ function Create-CoinArray{
 
 <#
     The ChiaOffer class has the following syntax:
-    $offer = [ChiaOffer]::new()
+    $offer = [ChiaOffer]::new()       - Create the class instance
+    $offer.
     
     
 
 #>
+
+
+
+
+
 Class ChiaOffer{
     [hashtable]$offer
     $coins
