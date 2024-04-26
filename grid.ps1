@@ -1,11 +1,14 @@
-# First Draft of an AMM.  
-# It's not pretty, but it works-ish.
-# DON'T USE This unless you know read through and understand what it does.   you may lose money!
-# Trading pair launcher IDs on TibetSwap.  
-# The full list can be pulled from the API: https://api.v2.tibetswap.io/pairs?skip=0&limit=10
-# Docs: https://api.v2.tibetswap.io/docs#/default/read_pairs_pairs_get
-
 <#
+ First Draft of an AMM.  
+  DON'T USE This unless you know read through and understand what it does.   you may lose money!
+  Trading pair launcher IDs on TibetSwap.  
+  The full list can be pulled from the API: https://api.v2.tibetswap.io/pairs?skip=0&limit=10
+  Docs: https://api.v2.tibetswap.io/docs#/default/read_pairs_pairs_get
+
+NOTES:
+    You need to make sure you have enough coins to trade with.  You can use chia wallet coins list -i {wallet_id} to list your coins.  
+    It's best if you split your coins into equal amounts based on how you're going to trade.  
+    If you are trading in 0.2 xch steps, split your CAT to be 1-2% more than what 0.2 XCH  will buy.
 
 
 RUN::
@@ -22,6 +25,11 @@ Start-TradeForCoin -Coin HOA -xch_max 1 -xch_step 0.20 -max_time 60
 . ** MAKE SURE THE $PAIRS NAME OF COIN MATCHES WHAT YOUR WALLET SHOWS **
 . ** MAKE SURE THE $PAIRS NAME OF COIN MATCHES WHAT YOUR WALLET SHOWS **
 
+
+TODO:
+    1. CREATE AUTOMATED WAY TO MAKE SURE YOU HAVE ENOUGH COINS FOR TRADING.
+    2. SET MAX LIMITS OF EXPOSURE FOR A COIN SO IT DOESN'T GO ON A BUYING/SELLING SPREE.
+    
 
 #>
 
