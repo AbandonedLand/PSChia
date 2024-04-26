@@ -5,6 +5,10 @@ Function Get-WalletIDs{
     return $data
 }
 
+Function Get-AllOffers{
+    $offers = (chia rpc wallet get_all_offers '{"start":0,"end":100}'| ConvertFrom-Json).trade_records
+    return $offers
+}
 
 ## The Coin Array makes it easier to find the Wallet ID of your token.  In the offer api, you need wallet IDs.
 ## This lets you use the token name instead of the wallet ID.
