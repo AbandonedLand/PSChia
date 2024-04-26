@@ -14,7 +14,13 @@ Start-TradeForCoin -Coin HOA -xch_max 1 -xch_step 0.20 -max_time 60
 
 . this will create 5 buy and 5 sell transactions for HOA coin for 0.2 XCH each and base the pricing off TibetSwap's current pricing.
 . Assuming you have a Coin in your Wallet called HOA 
-. Supported Coins are HOA / SBX / DBX
+. Supported Coins are HOA / SBX / DBX 
+. Add your own coins by using 
+
+
+. ** MAKE SURE THE $PAIRS NAME OF COIN MATCHES WHAT YOUR WALLET SHOWS **
+. ** MAKE SURE THE $PAIRS NAME OF COIN MATCHES WHAT YOUR WALLET SHOWS **
+. ** MAKE SURE THE $PAIRS NAME OF COIN MATCHES WHAT YOUR WALLET SHOWS **
 
 
 #>
@@ -46,6 +52,8 @@ $cats = @{
 
 # Trading pairs launcher_id for TibetSwap
 # You can pull the launcher_id from https://api.v2.tibetswap.io/token/{asset_id}
+# . ** MAKE SURE THE $PAIRS NAME OF COIN MATCHES WHAT YOUR WALLET SHOWS **
+
 $pairs = @{
     'DBX'='c0952d9c3761302a5545f4c04615a855396b1570be5c61bfd073392466d2a973'
     'SBX'='1a6d4f404766f984d014a3a7cab15021e258025ff50481c73ea7c48927bd28af'
