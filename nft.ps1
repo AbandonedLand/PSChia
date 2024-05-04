@@ -286,3 +286,37 @@ Function Invoke-WalletNftMintNft {
     $json = $json | ConvertTo-Json
     chia rpc wallet nft_mint_nft $json | ConvertFrom-Json
 }
+
+Function Invoke-WalletNftTransferNft{
+    param(
+        [Parameter(Mandatory=$true)]
+        $wallet_id,
+        [Parameter(Mandatory=$true)]
+        $target_address,
+        [Parameter(Mandatory=$true)]
+        $nft_coin_id,
+        $fee,
+        [switch]
+        $reuse_puzhash
+    )
+
+    $json = @{
+        wallet_id = $wallet_id
+        target_address = $target_address
+        nft_coin_id = $nft_coin_id
+    } 
+
+    if($fee){
+        $json.Add('fee',$fee)
+    } else {
+        $json.Add('fee',0)
+    }
+
+    if($reuse_puzhash.IsPresent){
+        $json.Add('reuse_puzhash',$true)
+    }
+
+    $json = $json | ConvertTo-Json
+
+    chia rpc wallet nft_transfer_nft $json | ConvertFrom-Json
+}
