@@ -50,7 +50,9 @@ Class ChiaOffer{
     $nft_info
     $max_height
     $max_time
-
+    $tibet_response
+    $traded_coin
+    $pairs
 
     ChiaOffer(){
         $this.max_height = 0
@@ -58,7 +60,11 @@ Class ChiaOffer{
         $this.coins = Create-CoinArray
         $this.fee = 0
         $this.offer = @{}
-        
+        $this.pairs = @{
+            'DBX'='c0952d9c3761302a5545f4c04615a855396b1570be5c61bfd073392466d2a973'
+            'SBX'='1a6d4f404766f984d014a3a7cab15021e258025ff50481c73ea7c48927bd28af'
+            'HOA'='ad79860e5020dcdac84336a5805537cbc05f954c44caf105336226351d2902c0'
+        }
         $this.dexie_url = "https://dexie.space/v1/offers"
     }
 
@@ -85,6 +91,7 @@ Class ChiaOffer{
     }
 
     requested($coin, $amount){
+        $this.traded_coin = $coin
         $this.offer.([string]$this.coins.$coin.id)=($amount*1000)
     }
 
@@ -112,6 +119,7 @@ Class ChiaOffer{
     }
 
     offered($coin, $amount){
+        $this.traded_coin = $coin
         $this.offer.([string]$this.coins.$coin.id)=([int64]($amount*-1000))
     }
     
@@ -150,6 +158,19 @@ Class ChiaOffer{
         $contentType = 'application/json' 
         $json_offer = $body | convertto-json
         $this.dexie_response = Invoke-WebRequest -Method POST -body $json_offer -Uri $this.dexie_url -ContentType $contentType
+    }
+
+    postToTibet(){
+        $data = $this.offertext | ConvertFrom-Json
+        $body = @{
+            offer = $data.offer
+            action = 'SWAP'
+            total_donation_amount = 0
+        } | ConvertTo-Json
+        $contentType = 'application/json' 
+        $uri = -join('https://api.v2.tibetswap.io/offer/',$this.pairs.($this.traded_coin))
+        $this.tibet_response = Invoke-RestMethod -Method Post -Uri $uri -Body $body -ContentType $contentType
+
     }
 
     RPCNFTInfo($nft_id){

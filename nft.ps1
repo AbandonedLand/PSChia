@@ -95,9 +95,7 @@ Function Invoke-WalletNftGetNfts{
         [Parameter(Mandatory=$true)]
         $wallet_id,
         $start_index,
-        $num,
-        [switch]
-        $ignore_size_limit
+        $num
     )
 
     $json = @{
@@ -109,9 +107,7 @@ Function Invoke-WalletNftGetNfts{
     if($num){
         $json.Add('num',$num)
     }
-    if($ignore_size_limit.IsPresent){
-        $json.Add('ignore_size_limit',$true)
-    }
+    
     $json = $json | ConvertTo-Json
 
     chia rpc wallet nft_get_nfts $json | ConvertFrom-Json
@@ -287,6 +283,100 @@ Function Invoke-WalletNftMintNft {
     chia rpc wallet nft_mint_nft $json | ConvertFrom-Json
 }
 
+Function Invoke-WalletNftSetDidBulk {
+    param(
+        [Parameter(Mandatory=$true)]
+        [array]$nft_coin_list,
+        [string]$did,
+        [int64]$fee,
+        [switch]
+        $reuse_puzhash
+    )
+
+    $json = @{
+        nft_coin_list = $nft_coin_list
+    }
+    if($did) {
+        $json.Add('did',$did)
+    }
+    if($fee) {
+        $json.Add('fee',$fee)
+    } else {
+        $json.Add('fee',0)
+    }
+    if($reuse_puzhash.IsPresent) {
+        $json.Add('reuse_puzhash',$true)
+    }
+    $json = $json | ConvertTo-Json
+
+    chia rpc wallet nft_set_did_bulk $json | ConvertFrom-Json
+}
+
+Function Invoke-WalletNftSetNftDid {
+    param(
+        [Parameter(Mandatory=$true)]
+        [int64]$wallet_id,
+        [Parameter(Mandatory=$true)]
+        [string]$nft_coin_id,
+        [string]$did,
+        [int64]$fee,
+        [switch]
+        $reuse_puzhash
+    )
+
+    $json = @{
+        wallet_id = $wallet_id
+        nft_coin_id = $nft_coin_id
+    }
+    if($did) {
+        $json.Add('did',$did)
+    }
+    if($fee) {
+        $json.Add('fee',$fee)
+    } else {
+        $json.Add('fee',0)
+    }
+    if($reuse_puzhash.IsPresent) {
+        $json.Add('reuse_puzhash',$true)
+    }
+    $json = $json | ConvertTo-Json
+
+    chia rpc wallet nft_set_nft_did $json | ConvertFrom-Json
+}
+
+Function Invoke-WalletNftTransferBulk{
+    param(
+        [Parameter(Mandatory=$true)]
+        [array]$nft_coin_list,
+        [Parameter(Mandatory=$true)]
+        $target_address,
+        $fee,
+        [switch]
+        $reuse_puzhash
+    )
+
+    $json = @{
+        nft_coin_list = $nft_coin_list
+        target_address = $target_address
+        
+    } 
+
+    if($fee){
+        $json.Add('fee',$fee)
+    } else {
+        $json.Add('fee',0)
+    }
+
+    if($reuse_puzhash.IsPresent){
+        $json.Add('reuse_puzhash',$true)
+    }
+
+    $json = $json | ConvertTo-Json
+
+    chia rpc wallet nft_transfer_bulk $json | ConvertFrom-Json
+}
+
+
 Function Invoke-WalletNftTransferNft{
     param(
         [Parameter(Mandatory=$true)]
@@ -320,3 +410,5 @@ Function Invoke-WalletNftTransferNft{
 
     chia rpc wallet nft_transfer_nft $json | ConvertFrom-Json
 }
+
+
