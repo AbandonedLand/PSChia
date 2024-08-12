@@ -25,19 +25,6 @@ function Create-CoinArray{
 } 
 
 
-<#
-    The ChiaOffer class has the following syntax:
-    $offer = [ChiaOffer]::new()       - Create the class instance
-    $offer.
-    
-    
-
-#>
-
-
-
-
-
 Class ChiaOffer{
     [hashtable]$offer
     $coins
@@ -46,13 +33,12 @@ Class ChiaOffer{
     $json
     $dexie_response
     $dexie_url 
+    $abandoned_land_response
     $requested_nft_data
     $nft_info
     $max_height
     $max_time
-    $tibet_response
-    $traded_coin
-    $pairs
+    $validate_only
 
     ChiaOffer(){
         $this.max_height = 0
@@ -60,11 +46,7 @@ Class ChiaOffer{
         $this.coins = Create-CoinArray
         $this.fee = 0
         $this.offer = @{}
-        $this.pairs = @{
-            'DBX'='c0952d9c3761302a5545f4c04615a855396b1570be5c61bfd073392466d2a973'
-            'SBX'='1a6d4f404766f984d014a3a7cab15021e258025ff50481c73ea7c48927bd28af'
-            'HOA'='ad79860e5020dcdac84336a5805537cbc05f954c44caf105336226351d2902c0'
-        }
+        $this.validate_only = $false
         $this.dexie_url = "https://dexie.space/v1/offers"
     }
 
@@ -91,13 +73,17 @@ Class ChiaOffer{
     }
 
     requested($coin, $amount){
-        $this.traded_coin = $coin
         $this.offer.([string]$this.coins.$coin.id)=($amount*1000)
     }
 
     addBlocks($num){
         $this.max_height = (((chia rpc full_node get_blockchain_state) | convertfrom-json).blockchain_state.peak.height) + $num
     }
+
+    setMaxHeight($num){
+        $this.max_height = $num
+    }
+    
 
     addTimeInMinutes($min){
         $DateTime = (Get-Date).ToUniversalTime()
@@ -119,27 +105,47 @@ Class ChiaOffer{
     }
 
     offered($coin, $amount){
-        $this.traded_coin = $coin
         $this.offer.([string]$this.coins.$coin.id)=([int64]($amount*-1000))
+    }
+
+    validateonly(){
+        $this.validate_only = $true
     }
     
     makejson(){
-        if($global:PSVersionTable.PSVersion.Major -ge 7 -AND $global:PSVersionTable.PSVersion.Minor -ge 3){
-            if($this.max_time -ne 0){
-                $this.json = ([ordered]@{"offer"=($this.offer); "fee"=$this.fee;"driver_dict"=$this.requested_nft_data;"max_time"=$this.max_time} | convertto-json -Depth 11)        
-            }else{
-                $this.json = ([ordered]@{"offer"=($this.offer); "fee"=$this.fee;"driver_dict"=$this.requested_nft_data} | convertto-json -Depth 11)     
-            }
-            
-        }
-        else{
-            if($this.max_time -ne 0){
-                $this.json = ([ordered]@{"offer"=($this.offer); "fee"=$this.fee;"driver_dict"=$this.requested_nft_data;"max_time"=$this.max_time} | convertto-json -Depth 11)
-            } else {
-                $this.json = ([ordered]@{"offer"=($this.offer); "fee"=$this.fee;"driver_dict"=$this.requested_nft_data} | convertto-json -Depth 11 )
-            }
-        }
-    }
+        if($this.max_time -ne 0){
+            $this.json = (
+                [ordered]@{
+                    "offer"=($this.offer)
+                    "fee"=$this.fee
+                    "validate_only"=$this.validate_only
+                    "reuse_puzhash"=$true
+                    "driver_dict"=$this.requested_nft_data
+                    "max_time"=$this.max_time
+                } | convertto-json -Depth 11)        
+        } elseif($this.max_height -ne 0){
+            $this.json = (
+                [ordered]@{
+                    "offer"=($this.offer)
+                    "fee"=$this.fee
+                    "validate_only"=$this.validate_only
+                    "reuse_puzhash"=$true
+                    "driver_dict"=$this.requested_nft_data
+                    "max_height"=$this.max_height
+                } | convertto-json -Depth 11)        
+        } else {
+            $this.json = (
+                [ordered]@{
+                    "offer"=($this.offer)
+                    "fee"=$this.fee
+                    "validate_only"=$this.validate_only
+                    "reuse_puzhash"=$true
+                    "driver_dict"=$this.requested_nft_data
+                } | convertto-json -Depth 11)     
+        } 
+    } 
+    
+
 
     createoffer(){
         $this.makejson()
@@ -150,16 +156,6 @@ Class ChiaOffer{
         $this.offertext = chia rpc wallet create_offer_for_ids $this.json
     }
     
-    postToDexie(){
-        $data = $this.offertext | convertfrom-json
-        $body = @{
-            "offer" = $data.offer
-        }
-        $contentType = 'application/json' 
-        $json_offer = $body | convertto-json
-        $this.dexie_response = Invoke-WebRequest -Method POST -body $json_offer -Uri $this.dexie_url -ContentType $contentType
-    }
-
     postToTibet(){
         $data = $this.offertext | ConvertFrom-Json
         $body = @{
@@ -172,6 +168,20 @@ Class ChiaOffer{
         $this.tibet_response = Invoke-RestMethod -Method Post -Uri $uri -Body $body -ContentType $contentType
 
     }
+
+    postToDexie(){
+        $data = $this.offertext | convertfrom-json
+        $body = @{
+            "offer" = $data.offer
+            "claim_rewards" = $true
+        }
+        $contentType = 'application/json' 
+        $json_offer = $body | convertto-json
+        $this.dexie_response = Invoke-WebRequest -Method POST -body $json_offer -Uri $this.dexie_url -ContentType $contentType
+    }
+    
+
+    
 
     RPCNFTInfo($nft_id){
         $this.nft_info = (chia rpc wallet nft_get_info ([ordered]@{coin_id=$nft_id} | ConvertTo-Json) | Convertfrom-json).nft_info
