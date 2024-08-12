@@ -1,14 +1,20 @@
-Function Invoke-WalletAddKey {
+
+Function New-PSCWalletKey {
     param(
         [Parameter(Mandatory=$true)]
-        [array]$mnemonic
+        [string[]]$mnemonic,
+        [switch]$ShowCommand
     )
-
+    
     $json = @{
         mnemonic=$mnemonic
     } | ConvertTo-Json
 
-    chia rpc wallet add_key $json | ConvertFrom-Json
+    if($ShowCommand.IsPresent){
+        Return "chia rpc wallet add_key '$json'"
+    }
+     
+    Return chia rpc wallet add_key $json | ConvertFrom-Json
 }
 
 Function Invoke-WalletCheckDeleteKey {
