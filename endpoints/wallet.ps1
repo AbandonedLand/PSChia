@@ -1,27 +1,129 @@
+## RENAME THIS TO WALLET.PSD1
+function New-ChiaWalletKey {
+    <#
+    .SYNOPSIS
+        Create a new wallet/fingerprint for a given mnemonic seed phrase
+    .DESCRIPTION
+        This creates your wallet on the blockchain.  For security reasons, this will not be stored in your PowerShell history.
+    .LINK
+        https://docs.chia.net/wallet-rpc/#add_key
+    .PARAMETER mnemonic
+        An array of strings used to generate a key.  The BIP 39 contains the list of valid words.
 
-Function New-PSCWalletKey {
+    .PARAMETER ShowCommand
+        Instead of running the command, this will show the command to be run 
+
+    .EXAMPLE
+        New-ChiaWalletKey -mnemonic @("hint", "dice", "session", "fun", "budget", "strong", "album", "lava", "tackle", "sudden", "garage", "people", "bundle", "federal", "chest", "process", "vicious", "behave", "nephew", "zero", "vital", "ocean", "artist", "lawsuit")
+
+        fingerprint success
+        ----------- -------
+        874731676    True
+    
+    .EXAMPLE 
+        New-ChiaWalletKey -ShowCommand -mnemonic @("hint", "dice", "session", "fun", "budget", "strong", "album", "lava", "tackle", "sudden", "garage", "people", "bundle", "federal", "chest", "process", "vicious", "behave", "nephew", "zero", "vital", "ocean", "artist", "lawsuit") 
+        
+        Output: 
+        chia rpc wallet add_key '{
+            "mnemonic": [
+                "hint",
+                "dice",
+                "session",
+                "fun",
+                "budget",
+                "strong",
+                "album",
+                "lava",
+                "tackle",
+                "sudden",
+                "garage",
+                "people",
+                "bundle",
+                "federal",
+                "chest",
+                "process",
+                "vicious",
+                "behave",
+                "nephew",
+                "zero",
+                "vital",
+                "ocean",
+                "artist",
+                "lawsuit"
+            ]
+            }'
+    #>
     param(
+        [CmdletBinding()]
         [Parameter(Mandatory=$true)]
-        [string[]]$mnemonic,
+        $mnemonic,
         [switch]$ShowCommand
     )
     
-    $json = @{
-        mnemonic=$mnemonic
-    } | ConvertTo-Json
+    process {
+        
+        # Remove this command from the PowerShell History
+        Clear-History -Count 1 -Newest | Out-Null
 
-    if($ShowCommand.IsPresent){
-        Return "chia rpc wallet add_key '$json'"
-    }
-     
-    Return chia rpc wallet add_key $json | ConvertFrom-Json
+        $json = @{
+            mnemonic = $mnemonic
+        } | ConvertTo-Json
+
+        # Check if showing just the command.
+        if($ShowCommand.IsPresent){
+            return "chia rpc wallet add_key '$json'"
+        }
+        chia rpc wallet add_key $json | ConvertFrom-Json
+        }
 }
 
-Function Invoke-WalletCheckDeleteKey {
+function Test-ChiaWalletKeys {
+    <#
+    .SYNOPSIS
+        Check wallet fingerprint has a balance.
+    .DESCRIPTION
+        Display whether a fingerprint has a balance, and whether it is used for farming or pool rewards. This is helpful when determining whether it is safe to delete a key without first backing it up
+
+    .PARAMETER fingerprint
+        The Fingerprint of the wallet to check
+    .PARAMETER max_ph_to_search
+        How many addresses deep to search?  
+    .PARAMETER ShowCommand
+        Instead of running the command, this will show the command to be run 
+    
+    .OUTPUTS
+        fingerprint:                {fingerprint of wallet}
+        success:                    did the command run successfully?
+        used_for_farmer_reward:     receiving farming rewards (non pool)
+        used_for_pool_rewards:      receiving farming rewards from pool plot
+        wallet_balance:             wallet has coins?
+    
+    .EXAMPLE
+        Test-ChiaWalletKeys -fingerprint 874731676 -max_ph_to_search 200
+
+        fingerprint             : 874731676
+        success                 : True
+        used_for_farmer_rewards : False
+        used_for_pool_rewards   : False
+        wallet_balance          : True
+
+
+    .EXAMPLE 
+        Test-ChiaWalletKeys -ShowCommand -fingerprint 874731676 -max_ph_to_search 200
+
+        chia rpc wallet check_delete_key '{
+            "max_ph_to_search": 200,
+            "fingerprint": 874731676
+            }'
+
+    .LINK
+        https://docs.chia.net/wallet-rpc/#check_delete_key    
+    #>
     param(
         [Parameter(Mandatory=$true)]
         [int64]$fingerprint,
-        [int64]$max_ph_to_search
+        [int64]$max_ph_to_search,
+        [switch]$ShowCommand
     )
 
     $json = @{
@@ -34,51 +136,172 @@ Function Invoke-WalletCheckDeleteKey {
 
     $json = $json | ConvertTo-Json
 
+    if($ShowCommand.IsPresent){
+        return "chia rpc wallet check_delete_key '$json'"
+    }
     chia rpc wallet check_delete_key $json | ConvertFrom-Json
-
 }
 
-Function Invoke-WalletDeleteAllKeys {
+function Remove-ChiaWalletKey {
+    <#
+    .SYNOPSIS
+        Remove fingerprint from wallet.
+
+    .DESCRIPTION
+        Removes access and keys to the wallet from your pc.  This does not remove it from the blockchain and can be added
+        back using New-ChiaWalletKey with the mnemonic.
+
+    .PARAMETER fingerprint
+        The Fingerprint of the wallet to check.
+      
+    .PARAMETER ShowCommand
+        Instead of running the command, this will show the command to be run.
+
+    .OUTPUTS
+        success: true/false
+    
+    .LINK
+        https://docs.chia.net/wallet-rpc/#delete_key
+
+
+    .EXAMPLE
+        Remove-ChiaWalletKey -fingerprint 874731676
+
+        success
+        -------
+        True
+
+    .EXAMPLE
+        Remove-ChiaWalletKey -ShowCommand -fingerprint 874731676
+
+        chia rpc wallet delete_key '{
+            "fingerprint": 874731676
+            }'
+    #>
     param(
         [Parameter(Mandatory=$true)]
-        [int64]$fingerprint
+        [int64]$fingerprint,
+        [switch]$ShowCommand
     )
-
     $json = @{
         fingerprint = $fingerprint
     } | ConvertTo-Json
 
-    chia rpc wallet delete_all_keys $json | ConvertFrom-Json
+    if($ShowCommand.IsPresent){
+        return "chia rpc wallet delete_key '$json'"
+    }
+    chia rpc wallet delete_key $json | ConvertFrom-Json
 }
 
-Function Invoke-WalletGenerateMnemonic {
+function New-ChiaWalletMnemonic {
+    <#
+    .SYNOPSIS
+        Create a new mnemonic array.
 
+    .DESCRIPTION
+        Creates a mnemonic that can be used to create a new wallet.
+
+    .EXAMPLE
+        New-ChiaWalletMnemonic
+
+        mnemonic                      success
+        --------                      -------
+        {state, fury, sting, inside…}    True
+
+    .EXAMPLE
+        New-ChiaWalletMnemonic -ShowCommand
+        chia rpc wallet generate_mnemonic
+
+    .EXAMPLE
+        Create a new wallet with a random key.
+        New-ChiaWalletKey -mnemonic (New-ChiaWalletMnemonic).mnemonic
+
+        fingerprint success
+        ----------- -------
+        456306896    True
+
+    .PARAMETER ShowCommand
+        Instead of running the command, this will show the command to be run.
+
+    .LINK
+        https://docs.chia.net/wallet-rpc/#generate_mnemonic
+
+    .OUTPUTS
+        success: True/False
+        mnemonic: ["word1","word2"...]
+    #>
+    param(
+        [switch]$ShowCommand
+    )
+    if($ShowCommand.IsPresent){
+        return "chia rpc wallet generate_mnemonic"
+    }
     chia rpc wallet generate_mnemonic | ConvertFrom-Json
+    
 }
 
-Function Invoke-WalletGetLoggedInFingerprint {
+function Get-ChiaWalletLoggedInFingerprint {
+    <#
+    .SYNOPSIS   
+        Get the active fingerprint the wallet is using.
+    .DESCRIPTION
+        This is useful if you run multiple wallets on the same machine.  This will show the current active wallet.
 
+    .LINK
+        https://docs.chia.net/wallet-rpc/#get_logged_in_fingerprint
+    
+    .PARAMETER ShowCommand
+        Instead of running the command, this will show the command to be run.
+
+    .EXAMPLE 
+        Get-ChiaWalletLoggedInFingerprint
+
+        fingerprint success
+        ----------- -------
+        456306896    True
+
+    .EXAMPLE
+        Get-ChiaWalletLoggedInFingerprint -ShowCommand
+
+        chia rpc wallet get_logged_in_fingerprint
+    #>
+
+    param(
+        [switch]$ShowCommand
+    )
+
+    
+    if($ShowCommand.IsPresent){
+        return "chia rpc wallet get_logged_in_fingerprint"
+    }
     chia rpc wallet get_logged_in_fingerprint | ConvertFrom-Json
+    
 }
 
-Function Invoke-WalletGetPrivateKey {
+
+function Get-ChiaWalletPrivateKey {
     param(
         [Parameter(Mandatory=$true)]
-        [int64]$fingerprint
+        [int64]$fingerprint,
+        [switch]$ShowCommand
     )
 
     $json = @{
         fingerprint = $fingerprint
     } | ConvertTo-Json
 
+    if($ShowCommand.IsPresent){
+        return "chia rpc wallet get_private_key '$json"
+    }
     chia rpc wallet get_private_key $json | ConvertFrom-Json
 
 }
 
-Function Invoke-WalletGetPublicKeys {
+Function Get-ChiaWalletPublicKey {
     param(
         [Parameter(Mandatory=$true)]
-        [int64]$fingerprint
+        [int64]$fingerprint,
+        [switch]$ShowCommand
     )
 
     $json = @{
@@ -89,10 +312,11 @@ Function Invoke-WalletGetPublicKeys {
 
 }
 
-Function Invoke-WalletLogIn {
+Function Set-ChiaWalletKey {
     param(
         [Parameter(Mandatory=$true)]
-        [int64]$fingerprint
+        [int64]$fingerprint,
+        [switch]$ShowCommand
     )
 
     $json = @{
@@ -105,27 +329,27 @@ Function Invoke-WalletLogIn {
 
 
 
-Function Invoke-WalletGetAutoClaim {
+Function Get-ChiaWalletAutoClaim {
 
     chia rpc wallet get_auto_claim | ConvertFrom-Json
 }
 
-Function Invoke-WalletGetHeightInfo {
+Function Get-ChiaWalletHeight {
 
     chia rpc wallet get_height_info | ConvertFrom-Json
 }
 
-Function Invoke-WalletGetNetworkInfo {
+Function Get-ChiaWalletNetwork {
 
     chia rpc wallet get_network_info | ConvertFrom-Json
 }
 
-Function Invoke-WalletGetSyncStatus {
+Function Get-ChiaWalletSyncStatus {
 
     chia rpc wallet get_sync_status | ConvertFrom-Json
 }
 
-Function Invoke-WalletGetTimestampForHeight{
+Function Get-ChiaWalletTimeStampForHeight {
     param(
         [Parameter(Mandatory=$true)]
         [Int64]$height
@@ -138,7 +362,7 @@ Function Invoke-WalletGetTimestampForHeight{
     chia rpc wallet get_timestamp_for_height $json | ConvertFrom-Json
 }
 
-Function Invoke-WalletPushTx {
+Function Send-ChiaWalletTransaction {
     param(
         [Parameter(Mandatory=$true)]
         [string]$spend_bundle
@@ -151,14 +375,14 @@ Function Invoke-WalletPushTx {
     chia rpc wallet push_tx $json
 }
 
-Function Invoke-WalletSetWalletResyncOnStartup {
+Function Set-ChiaWalletResyncOnStartup {
 
     chia rpc wallet set_wallet_resync_on_startup | ConvertFrom-Json
 }
 
 
 
-Function Set-AutoClaim{
+Function Set-ChiaWalletAutoClaim{
     param(
         [Parameter(Mandatory=$true,ParameterSetName='Enable')]
         [switch]
@@ -195,7 +419,7 @@ Function Set-AutoClaim{
 }
 
 
-Function Invoke-WalletCreateNewWallet {
+Function New-ChiaWallet {
     param(
         [Parameter(Mandatory=$true,ParameterSetName = 'walletType')]
         [ValidateSet("cat_wallet","did_wallet","nft_wallet","pool_wallet")]
@@ -280,7 +504,7 @@ Function Invoke-WalletCreateNewWallet {
     chia rpc wallet create_new_wallet $json | ConvertFrom-Json
     }
 
-Function Invoke-WalletGetWallets {
+Function Get-ChiaWallets {
     param(
         [switch]
         $exclude_data,
