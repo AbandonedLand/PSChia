@@ -1,8 +1,32 @@
-Function Invoke-WalletAddKey {
+function New-Key {
+    <#
+        .SYNOPSIS
+            Create a new key (wallet/fingerprint) from a given mnemonic seed phrase.
+        
+        .DESCRIPTION
+            New-WalletKey adds a new wallet key to Chia.
+
+        .EXAMPLE
+            PS> New-WalletKey -mnemonic @("hint", "dice", "session", "fun", "budget", "strong", "album", "lava", "tackle", "sudden", "garage", "people", "bundle", "federal", "chest", "process", "vicious", "behave", "nephew", "zero", "vital", "ocean", "artist", "lawsuit")
+
+            Name                           Value
+            ----                           -----
+            success                        True
+            fingerprint                    874731676
+
+        .LINK
+        https://docs.chia.net/wallet-rpc/#add_key
+
+    #>
+    
     param(
         [Parameter(Mandatory=$true)]
-        [array]$mnemonic
+        [string[]]$mnemonic
     )
+
+    if(!($mnemonic.count -eq 12 -or $mnemonic.count -eq 24)){
+        throw "The mnemonic seed must be 12 or 24 words long"
+    }
 
     $json = @{
         mnemonic=$mnemonic
